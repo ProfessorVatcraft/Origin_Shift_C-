@@ -1,7 +1,11 @@
 #include <iostream>
 #include <vector>
+//Randomizer libraries
 #include <ctime>
 #include <cstdlib>
+//Libraries for custom unicode characters
+#include <io.h>
+#include <fcntl.h>
 
 using namespace std;
 
@@ -75,7 +79,7 @@ public:
                 shiftDown();
             }
             else {
-                bool shiftTo = (rand() % 2 == 0) ? -1 : 1;
+                bool shiftTo = rand() % 2 == 0;
                 if (shiftTo){
                     shiftUp();
                 }
@@ -109,27 +113,47 @@ public:
 
     //Function to print the maze
     void printMaze() {
+        //Define arrow characters
+        _setmode(_fileno(stdout), _O_U16TEXT);
+        const wchar_t R = L'\x2192';
+        const wchar_t L = L'\x2190';
+        const wchar_t U = L'\x2191';
+        const wchar_t D = L'\x2193';
+        const wchar_t Origin = L'\x00D8';
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                if (i == origin_pos_y && j == origin_pos_x){
-                    cout << " O ";
+                if (mazeMap[i][j].direction_x == -1){
+                    wcout << ' ' << L << ' ' << 'o';
                 }
-                if (mazeMap[i][j].direction_x == 1){
-                    cout << " > ";
-                }
-                else if (mazeMap[i][j].direction_x == -1){
-                    cout << " < ";
-                }
-                else if (mazeMap[i][j].direction_y == 1) {
-                    cout << " ^ ";
-                }
-                else if (mazeMap[i][j].direction_y == -1) {
-                    cout << " v ";
+                else {
+                    if (mazeMap[i][j - 1].direction_x == 0 || mazeMap[i][j - 1].direction_x == -1){
+                        wcout << "   ";
+                    }
+                    if (mazeMap[i][j].direction_x == 0 && mazeMap[i][j].direction_y == 0){
+                        wcout << Origin;
+                    }
+                    else {
+                        wcout << 'o';
+                        if (mazeMap[i][j].direction_x == 1){
+                            wcout << ' ' << R << ' ';
+                        }
+                    }
                 }
             }
-            cout << endl;
+            wcout << endl;
+            for (int k = 0; k < width; k++){
+                if (mazeMap[i][k].direction_y == -1){
+                    wcout << D << "   ";
+                }
+                else if (i < height - 1 && mazeMap[i + 1][k].direction_y == 1){
+                    wcout << U << "   ";
+                }
+                else {
+                    wcout << "    ";
+                }
+            }
+            wcout << endl;
         }
-        cout << endl;
     }
 };
 
@@ -145,9 +169,9 @@ int main() {
         Maze myMaze(mazeSize, mazeSize);
         myMaze.printMaze();
         char iterate;
-        cout << "Press 'i' to iterate the maze 1 time" << endl;
-        cout << "Press 'f' to iterate the maze multiple times" << endl;
-        cout << "Press any other keys to end" << endl;
+        wcout << "Press 'i' to iterate the maze 1 time" << endl;
+        wcout << "Press 'f' to iterate the maze multiple times" << endl;
+        wcout << "Press any other keys to end" << endl;
         do {
             cin >> iterate;
             if (iterate != 'i' && iterate != 'f') {
@@ -167,6 +191,3 @@ int main() {
     }
     return 0;
 }
-
-
-
